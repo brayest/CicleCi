@@ -5,4 +5,5 @@ jobs:
       - image: 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest
     steps:
       - checkout
-      - run: echo "A first hello"
+      - run: docker run -d -p 8080:8080 --name sample-go-webapp 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest; sleep 10
+      - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World!"
