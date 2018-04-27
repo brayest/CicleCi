@@ -1,7 +1,8 @@
-# Building on top of Ubuntu 14.04. The best distro around.
-FROM ubuntu:14.04
+FROM golang:1.8
 
-COPY ./go-ecs-ecr /opt/
+WORKDIR /go/src/app
+COPY ./go-ecs-ecr .
+
 EXPOSE 8080
 
-ENTRYPOINT ["/opt/go-ecs-ecr"]
+CMD ["go", "run", "main.go"]
