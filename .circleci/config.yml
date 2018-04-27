@@ -3,4 +3,6 @@ jobs:
   build:
     docker:
       - image: 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest
-      
+    steps:
+      - checkout
+      - run: echo "A first hello"
