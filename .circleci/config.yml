@@ -1,5 +1,8 @@
 version: 2
 jobs:
+  machine:
+    services:
+      - docker
   build:
     docker:
       - image: 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest
