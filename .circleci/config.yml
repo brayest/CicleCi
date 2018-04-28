@@ -4,3 +4,4 @@ jobs:
    machine: true
    steps:
      - checkout
+     - run: docker build -t 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest .
