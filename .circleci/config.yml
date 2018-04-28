@@ -5,3 +5,5 @@ jobs:
    steps:
      - checkout
      - run: docker build -t 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest .
+     - run: docker run -d -p 8080:8080 --name circleci 030735432563.dkr.ecr.us-east-2.amazonaws.com/circleci:latest; sleep 10
+     - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World!"
