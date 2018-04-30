@@ -13,11 +13,11 @@ jobs:
     steps:
       - run: echo "deploy"
 
-#workflows:
-#  version: 2
-#  build_test_and_deploy:
-#    jobs:
-#      - build
-#      - deploy:
-#          requires:
-#            - build
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
