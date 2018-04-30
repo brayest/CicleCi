@@ -1,12 +1,12 @@
 version: 2
 jobs:
-  build:
-    machine: true
-    steps:
-      - checkout
-      - run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest .
-      - run: docker run -d -p 8080:8080 --name circleci $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest; sleep 10
-      - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World!"
+  # build:
+  #   machine: true
+  #   steps:
+  #     - checkout
+  #     - run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest .
+  #     - run: docker run -d -p 8080:8080 --name circleci $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest; sleep 10
+  #     - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World!"
   deploy:
     machine: true
     steps:
@@ -16,11 +16,11 @@ jobs:
         - command: ./push.sh
       - run: echo "deploy"
 
-workflows:
-  version: 2
-  build_test_and_deploy:
-    jobs:
-      - build
-      - deploy:
-          requires:
-            - build
+# workflows:
+#   version: 2
+#   build_test_and_deploy:
+#     jobs:
+#       - build
+#       - deploy:
+#           requires:
+#             - build
