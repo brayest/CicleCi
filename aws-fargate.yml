@@ -370,8 +370,8 @@ Resources:
       Cluster: 'CircleCiTest'
       LaunchType: FARGATE
       DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 75
+        MaximumPercent: 100
+        MinimumHealthyPercent: 50
       DesiredCount: !Ref 'DesiredCount'
       NetworkConfiguration:
         AwsvpcConfiguration:
