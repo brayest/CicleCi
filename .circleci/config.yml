@@ -12,7 +12,8 @@ jobs:
     steps:
       - checkout
       - run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest .
-      - command: ./push.sh
+      - run:
+        - command: ./push.sh
       - run: echo "deploy"
 
 workflows:
