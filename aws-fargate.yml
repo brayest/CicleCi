@@ -29,7 +29,7 @@ Parameters:
     Type: String
   ServiceName:
     Type: String
-    Default: GOapp-Test
+    Default: GOapp-Test2
     Description: A name for the service
   ImageUrl:
     Type: String
