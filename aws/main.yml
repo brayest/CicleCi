@@ -1,0 +1,99 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template allow to launch a new environment with ECS Fargate with ALB.
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: AWS Quick Start Configuration
+      Parameters:
+      - QSS3BucketName
+      - QSS3KeyPrefix
+    - Label:
+        default: 'Principal VPC configuration (Required)'
+      Parameters:
+      - pVpCIDR
+      - pPublicSubnet1CIDR
+      - pPublicSubnet2CIDR
+      - pPrivateSubnet1CIDR
+      - pPrivateSubnet2CIDR
+      - pKeyPair
+      - pImageURL
+
+    ParameterLabels:
+      pVpCIDR:
+        default: The ACIDR of the principal VPC
+      pPublicSubnet1CIDR:
+        default: The ACIDR of the DMZ subnet A
+      pPublicSubnet2CIDR:
+        default: The ACIDR of the DMZ subnet B
+      pPrivateSubnet1CIDR:
+        default: The ACIDR of the app A private subnet
+      pPrivateSubnet2CIDR:
+        default: The ACIDR of the app B private subnet
+      pKeyPair:
+        default: KeyPair for Cluser
+      pImageURL:
+        default: URL for docker image
+      QSS3BucketName:
+        default: Quick Start S3 Bucket Name
+      QSS3KeyPrefix:
+        default: Quick Start S3 Key Prefix
+
+  Stack:
+    Value: 0
+  VersionDate:
+    Value: 20160518
+  Identifier:
+    Value: main
+  Input:
+    Description: Input of all required parameters in nested stacks
+  Output:
+    Description: N/A
+Parameters:
+  pVpCIDR:
+    Type: String
+    Default: 10.2.0.0/16
+  pPublicSubnet1CIDR:
+    Type: String
+    Default: 10.2.1.0/24
+  pPublicSubnet2CIDR:
+    Type: String
+    Default: 10.2.2.0/24
+  pPrivateSubnet1CIDR:
+    Type: String
+    Default: 10.2.3.0/24
+  pPrivateSubnet2CIDR:
+    Type: String
+    Default: 10.2.4.0/25
+  pImageURL:
+    Type: String
+    Default: 202279780353.dkr.ecr.us-east-1.amazonaws.com/circleci:latest
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, periods (.), and hyphens (-). It cannot start or
+      end with a hyphen (-).
+    Default: veniti-infraestructure
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
+      can include numbers, lowercase letters, uppercase letters, and hyphens (-).
+      It cannot start or end with a hyphen (-).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/). It cannot start or end
+      with forward slash (/) because they are automatically appended.
+    Default: qa
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
+      can include numbers, lowercase letters, uppercase letters, hyphens (-), and
+      forward slash (/). It cannot start or end with forward slash (/) because they
+      are automatically appended.
+    Type: String
+  pKeyPair:
+    AllowedPattern: ^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slash (/). It cannot start or end
+      with forward slash (/) because they are automatically appended.
+    Default: SSLTEST
+    Type: String
