@@ -18,7 +18,6 @@ Metadata:
       - pPrivateSubnet1CIDR
       - pPrivateSubnet2CIDR
       - pKeyPair
-      - pImageURL
 
     ParameterLabels:
       pVpCIDR:
@@ -33,8 +32,6 @@ Metadata:
         default: The ACIDR of the app B private subnet
       pKeyPair:
         default: KeyPair for Cluser
-      pImageURL:
-        default: URL for docker image
       QSS3BucketName:
         default: Quick Start S3 Bucket Name
       QSS3KeyPrefix:
@@ -66,14 +63,12 @@ Parameters:
   pPrivateSubnet2CIDR:
     Type: String
     Default: 10.2.4.0/25
-  pImageURL:
-    Type: String
-    Default: 202279780353.dkr.ecr.us-east-1.amazonaws.com/circleci:latest
   QSS3BucketName:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
     ConstraintDescription: Quick Start bucket name can include numbers, lowercase
       letters, uppercase letters, periods (.), and hyphens (-). It cannot start or
       end with a hyphen (-).
+    Default: brayan-bucket
     Default: veniti-infraestructure
     Description: S3 bucket name for the Quick Start assets. Quick Start bucket name
       can include numbers, lowercase letters, uppercase letters, and hyphens (-).
@@ -84,19 +79,71 @@ Parameters:
     ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
       uppercase letters, hyphens (-), and forward slash (/). It cannot start or end
       with forward slash (/) because they are automatically appended.
-    Default: qa
+    Default: aws
     Description: S3 key prefix for the Quick Start assets. Quick Start key prefix
       can include numbers, lowercase letters, uppercase letters, hyphens (-), and
       forward slash (/). It cannot start or end with forward slash (/) because they
       are automatically appended.
     Type: String
-  pKeyPair:
-    AllowedPattern: ^[0-9a-zA-Z-]+(/[0-9a-zA-Z-]+)*$
-    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), and forward slash (/). It cannot start or end
-      with forward slash (/) because they are automatically appended.
-    Default: SSLTEST
+  KeyName:
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Description: Name of the existing EC2 KeyPair for SSH.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: 'CircleCi'
+  SSHLocation:
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x.
+    Default: 0.0.0.0/0
+    Description: Lockdown SSH access (default can be accessed from anywhere)
+    MaxLength: '18'
+    MinLength: '9'
     Type: String
+  ServiceName:
+    Type: String
+    Default: GOapp-Test2
+    Description: A name for the service
+  ImageURL:
+    Type: String
+    Default: 202279780353.dkr.ecr.us-east-1.amazonaws.com/circleci:latest
+    Description: The url of a docker image that contains the application process that
+                 will handle the traffic for this service
+  ContainerPort:
+    Type: Number
+    Default: 8080
+    Description: What port number the application inside the docker container is binding to
+  ContainerCpu:
+    Type: Number
+    Default: 256
+    Description: How much CPU to give the container. 1024 is 1 CPU
+  ContainerMemory:
+    Type: Number
+    Default: 512
+    Description: How much memory in megabytes to give the container
+  Path:
+    Type: String
+    Default: "*"
+    Description: A path on the public load balancer that this service
+                 should be connected to. Use * to send all load balancer
+                 traffic to this service.
+  Priority:
+    Type: Number
+    Default: 1
+    Description: The priority for the routing rule added to the load balancer.
+                 This only applies if your have multiple services which have been
+                 assigned to different paths on the load balancer.
+  DesiredCount:
+    Type: Number
+    Default: 2
+    Description: How many copies of the service task to run
+  Role:
+    Type: String
+    Default: ""
+    Description: (Optional) An IAM role to give the service's containers if the code within needs to
+                 access other AWS resources like S3 buckets, DynamoDB tables, etc
+
+Conditions:
+  HasCustomRole: !Not [ !Equals [!Ref 'Role', ''] ]
+
 Mappings:
   mGeoLocation:
       North-America:
@@ -170,3 +217,79 @@ Resources:
         PublicSubnet2CIDR:         !Ref pPublicSubnet2CIDR
         PrivateSubnet1CIDR:        !Ref pPrivateSubnet1CIDR
         PrivateSubnet2CIDR:        !Ref pPrivateSubnet2CIDR
+
+  rSecurityGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+        - ${QuickStartS3URL}/${QSS3BucketName}/${QSS3KeyPrefix}/security-groups.yml
+        - QuickStartS3URL:
+            !FindInMap
+            - AWSInfoRegionMap
+            - !Ref AWS::Region
+            - QuickStartS3URL
+      TimeoutInMinutes: 20
+      Parameters:
+        EnvironmentName:            !Ref AWS::StackName
+        VPC:                        !GetAtt rProductionVpcTemplate.Outputs.VPC
+
+  rECSCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+        - ${QuickStartS3URL}/${QSS3BucketName}/${QSS3KeyPrefix}/ecs-cluster.yml
+        - QuickStartS3URL:
+            !FindInMap
+            - AWSInfoRegionMap
+            - !Ref AWS::Region
+            - QuickStartS3URL
+      TimeoutInMinutes: 20
+      Parameters:
+        EnvironmentName:            !Ref AWS::StackName
+
+  rLoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+        - ${QuickStartS3URL}/${QSS3BucketName}/${QSS3KeyPrefix}/load-balancer.yml
+        - QuickStartS3URL:
+            !FindInMap
+            - AWSInfoRegionMap
+            - !Ref AWS::Region
+            - QuickStartS3URL
+      TimeoutInMinutes: 20
+      Parameters:
+        EnvironmentName:            !Ref AWS::StackName
+        VPC:                        !GetAtt rProductionVpcTemplate.Outputs.VPC
+        Subnets:                    !Join [ ",", [ !GetAtt rProductionVpcTemplate.Outputs.PublicSubnet1, !GetAtt rProductionVpcTemplate.Outputs.PublicSubnet2 ]]
+        SecurityGroup:              !GetAtt rSecurityGroup.Outputs.LoadBalancerSecurityGroup
+        Path:                       !Ref Path
+
+  rECSService:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+        - ${QuickStartS3URL}/${QSS3BucketName}/${QSS3KeyPrefix}/ecs-job.yml
+        - QuickStartS3URL:
+            !FindInMap
+            - AWSInfoRegionMap
+            - !Ref AWS::Region
+            - QuickStartS3URL
+      TimeoutInMinutes: 20
+      Parameters:
+        VPC:                        !GetAtt rProductionVpcTemplate.Outputs.VPC
+        Cluster:                    !GetAtt rECSCluster.Outputs.Cluster
+        ImageURL:                   !Ref ImageURL
+        Subnets:                    !Join [ ",", [ !GetAtt rProductionVpcTemplate.Outputs.PublicSubnet1, !GetAtt rProductionVpcTemplate.Outputs.PublicSubnet2 ]]
+        ServiceName:                !Ref ServiceName
+        ContainerCpu:               !Ref ContainerCpu
+        ContainerMemory:            !Ref ContainerMemory
+        ContainerPort:              !Ref ContainerPort
+        SecurityGroup:              !GetAtt rSecurityGroup.Outputs.FargateContainerSecurityGroup
+        TargetGroup:                !GetAtt rLoadBalancer.Outputs.DefaultTargetGroup
+        Role:                       !Ref Role
+        DesiredCount:               !Ref DesiredCount
