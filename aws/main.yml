@@ -97,3 +97,76 @@ Parameters:
       with forward slash (/) because they are automatically appended.
     Default: SSLTEST
     Type: String
+Mappings:
+  mGeoLocation:
+      North-America:
+          Id: 'NA'
+      Europe:
+          Id: 'EU'
+  AWSInfoRegionMap:
+    ap-northeast-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    ap-northeast-2:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    ap-south-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    ap-southeast-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    ap-southeast-2:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    ca-central-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    eu-central-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    eu-west-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    eu-west-2:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    sa-east-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    us-east-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    us-east-2:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    us-gov-west-1:
+      Partition: aws-us-gov
+      QuickStartS3URL: https://s3-us-gov-west-1.amazonaws.com
+    us-west-1:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+    us-west-2:
+      Partition: aws
+      QuickStartS3URL: https://s3.amazonaws.com
+
+Resources:
+  rProductionVpcTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        !Sub
+        - ${QuickStartS3URL}/${QSS3BucketName}/${QSS3KeyPrefix}/vpc.yml
+        - QuickStartS3URL:
+            !FindInMap
+            - AWSInfoRegionMap
+            - !Ref AWS::Region
+            - QuickStartS3URL
+      TimeoutInMinutes: 20
+      Parameters:
+        EnvironmentName:           !Ref AWS::StackName
+        VpcCIDR:                   !Ref pVpCIDR
+        PublicSubnet1CIDR:         !Ref pPublicSubnet1CIDR
+        PublicSubnet2CIDR:         !Ref pPublicSubnet2CIDR
+        PrivateSubnet1CIDR:        !Ref pPrivateSubnet1CIDR
+        PrivateSubnet2CIDR:        !Ref pPrivateSubnet2CIDR
