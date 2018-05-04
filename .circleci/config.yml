@@ -6,7 +6,7 @@ jobs:
       - checkout
       - run: docker build -t $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest .
       - run: docker run -d -p 8080:8080 --name circleci $AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/circleci:latest; sleep 10
-      - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World Brayan 3!"
+      - run: curl --retry 10 --retry-delay 5 localhost:8080 | grep "Hello World Brayan 4!"
   deploy:
     machine: true
     steps:
